@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.Duration;
 import java.time.LocalDate;
 
 public class FilmValidator {
@@ -40,8 +39,8 @@ public class FilmValidator {
         }
     }
 
-    private static void durationValidation(Duration duration) {
-        if (duration == null || duration.isNegative() || duration.toMinutes() > 600) {
+    private static void durationValidation(long duration) {
+        if (duration < 0 || duration > 600) {
             log.error("Ошибка валидации продолжительности");
             throw new ValidationException("Продолжительность фильма не может быть отрицательной " +
                     "и не может быть более 10 часов");
