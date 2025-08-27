@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 public class FilmValidator {
 
-    private final static Logger log = LoggerFactory.getLogger(FilmValidator.class);
+    private static final Logger log = LoggerFactory.getLogger(FilmValidator.class);
 
     public static void validate(Film film) {
         nameValidation(film.getName());
