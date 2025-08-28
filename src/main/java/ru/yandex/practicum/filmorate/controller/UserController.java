@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.validator.UserValidator;
 
@@ -46,7 +46,7 @@ public class UserController {
     @PutMapping
     public User update(@RequestBody User user) {
         if (user.getId() == null) {
-            throw new UserNotFoundException("Необходимо указать id пользователя," +
+            throw new NotFoundException("Необходимо указать id пользователя," +
                     " иначе его невозможно будет найти в нашей базе");
         }
 
@@ -64,7 +64,7 @@ public class UserController {
 
             return oldUser;
         }
-        throw new UserNotFoundException("Указанный пользователь не найден");
+        throw new NotFoundException("Указанный пользователь не найден");
     }
 
 }

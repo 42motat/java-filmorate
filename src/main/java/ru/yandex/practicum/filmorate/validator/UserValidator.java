@@ -1,13 +1,15 @@
 package ru.yandex.practicum.filmorate.validator;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-// import java.util.Set;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserValidator {
 
     private static final Logger log = LoggerFactory.getLogger(UserValidator.class);
@@ -34,15 +36,7 @@ public class UserValidator {
             log.error("Адрес не содержит символа @");
             throw new ValidationException("Ошибка валидации адреса электронной почты:" +
                     " некорректный адрес электронной почты");
-        } /* else if (email.contains("@")) {
-            Set<String> emailDomains = Set.of("gmail.com", "mail.ru", "yandex.ru");
-            int atPosition = email.indexOf("@");
-            String emailDomain = email.substring(atPosition);
-            if (!(emailDomains.contains(emailDomain))) {
-                log.error("Не заполнен адрес электронной почты");
-                throw new ValidationException("Некорректный адрес электронной почты");
-            }
-        } */
+        }
     }
 
     private static void loginValidation(String login) {

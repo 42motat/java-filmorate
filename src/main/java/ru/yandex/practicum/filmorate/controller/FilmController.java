@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.validator.FilmValidator;
 
@@ -46,7 +46,7 @@ public class FilmController {
     @PutMapping
     public Film update(@RequestBody Film film) {
         if (film.getId() == null) {
-            throw new FilmNotFoundException("Необходимо указать id фильма," +
+            throw new NotFoundException("Необходимо указать id фильма," +
                                             " иначе его невозможно будет найти в нашей базе");
         }
 
@@ -64,7 +64,7 @@ public class FilmController {
 
             return oldFilm;
         }
-        throw new FilmNotFoundException("Указанный фильм не найден");
+        throw new NotFoundException("Указанный фильм не найден");
     }
 
 }
