@@ -1,46 +1,38 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.ErrorResponse;
+import ru.yandex.practicum.filmorate.exception.AbstractDtoException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.user.UserService;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validator.UserValidator;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
-    private final Map<Long, User> users = new HashMap<>();
-
-    private final Logger log = LoggerFactory.getLogger(UserController.class);
+    private final UserStorage userStorage;
+    private final UserService userService;
 
     @GetMapping
     public Collection<User> getAllUsers() {
-        return users.values();
+        return userStorage.getAllUsers();
     }
 
     @PostMapping
     public User create(@RequestBody User user) {
         UserValidator.validate(user);
-        user.setId(getNextId());
-
-        users.put(user.getId(), user);
-
         log.debug("Пользователь успешно добавлен в список пользователей; id={}", user.getId());
-
-        return user;
-    }
-
-    private long getNextId() {
-        long currentMaxId = users.keySet().stream()
-                .mapToLong(userId -> userId)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+        return userStorage.create(user);
     }
 
     @PutMapping
@@ -49,22 +41,51 @@ public class UserController {
             throw new NotFoundException("Необходимо указать id пользователя," +
                     " иначе его невозможно будет найти в нашей базе");
         }
-
         UserValidator.validate(user);
+        log.debug("Пользователь с id={} успешно обновлён", user.getId());
+        return userStorage.update(user);
+    }
 
-        if (users.containsKey(user.getId())) {
-            User oldUser = users.get(user.getId());
-            // валидация проходит раньше поиска, поэтому можно считать все переданные значения валидными
-            oldUser.setEmail(user.getEmail());
-            oldUser.setLogin(user.getLogin());
-            oldUser.setName(user.getName());
-            oldUser.setBirthday(user.getBirthday());
+    @GetMapping("/{userId}")
+    public Optional<User> getById(@PathVariable long userId) {
+        log.trace("Поиск пользователя с id={}", userId);
+        return userStorage.getById(userId);
+    }
 
-            log.debug("Пользователь с id={} успешно обновлён", user.getId());
+    @DeleteMapping("/{userId}")
+    public User deleteById(@PathVariable long userId) {
+        log.trace("Удаление пользователя с id={}", userId);
+        return userStorage.deleteById(userId);
+    }
 
-            return oldUser;
-        }
-        throw new NotFoundException("Указанный пользователь не найден");
+    // работа с друзьями
+    @PutMapping("/{userId}/friends/{otherUserId}")
+    public void addFriend(@PathVariable long userId, @PathVariable long otherUserId) {
+        log.trace("Добавление в друзья пользователю id={} пользователя id={}", userId, otherUserId);
+        userService.addFriend(userId, otherUserId);
+    }
+
+    @DeleteMapping("/{userId}/friends/{otherUserId}")
+    public void removeFriend(@PathVariable long userId, @PathVariable long otherUserId) {
+        log.trace("Удаление из друзей пользователя id={} пользователя id={}", userId, otherUserId);
+        userService.removeFriend(userId, otherUserId);
+    }
+
+    @GetMapping("/{userId}/friends")
+    public Collection<User> getAllFriends(@PathVariable long userId) {
+        log.trace("Поиск всех друзей пользователя id={}", userId);
+        return userService.getUserFriends(userId);
+    }
+
+    @GetMapping("/{userId}/friends/common/{otherUserId}")
+    public Collection<User> getCommonFriends(@PathVariable long userId, @PathVariable long otherUserId) {
+        log.trace("Поиск общий друзей пользователя id={} и пользователя id={}", userId, otherUserId);
+        return userService.getCommonFriends(userId, otherUserId);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleException(AbstractDtoException e) {
+        return e.toResponse();
     }
 
 }
