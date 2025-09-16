@@ -38,20 +38,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Collection<User> getUserFriends(long userId) {
-        User user = userStorage.getById(userId).
-                orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
+        User user = userStorage.getById(userId)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
         Set<Long> friendsId = user.getFriends();
         return retrieveUsersFromUserId(friendsId);
     }
 
     @Override
     public Collection<User> getCommonFriends(long userId, long otherUserId) {
-        User user = userStorage.getById(userId).
-                orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
+        User user = userStorage.getById(userId)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
         Collection<User> userFriends = retrieveUsersFromUserId(user.getFriends());
 
-        User otherUser = userStorage.getById(otherUserId).
-                orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
+        User otherUser = userStorage.getById(otherUserId)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
         Collection<User> otherUserFriends = retrieveUsersFromUserId(otherUser.getFriends());
 
         return userFriends.stream()

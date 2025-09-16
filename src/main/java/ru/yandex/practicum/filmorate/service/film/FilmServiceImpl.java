@@ -19,16 +19,20 @@ public class FilmServiceImpl implements FilmService {
     // работа с лайками
     @Override
     public void addLike(long filmId, long userId) {
-        Film film = filmStorage.getById(filmId).orElseThrow(() -> new NotFoundException("Такого фильма нет в базе данных"));
-        User user = userStorage.getById(userId).orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
+        Film film = filmStorage.getById(filmId)
+                .orElseThrow(() -> new NotFoundException("Такого фильма нет в базе данных"));
+        User user = userStorage.getById(userId)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
 
         film.getUsersWhoLiked().add(userId);
     }
 
     @Override
     public void removeLike(long filmId, long userId) {
-        Film film = filmStorage.getById(filmId).orElseThrow(() -> new NotFoundException("Такого фильма нет в базе данных"));
-        User user = userStorage.getById(userId).orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
+        Film film = filmStorage.getById(filmId)
+                .orElseThrow(() -> new NotFoundException("Такого фильма нет в базе данных"));
+        User user = userStorage.getById(userId)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
 
         film.getUsersWhoLiked().remove(userId);
     }
