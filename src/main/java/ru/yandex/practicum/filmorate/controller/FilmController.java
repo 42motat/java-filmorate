@@ -6,12 +6,10 @@
 
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.dto.ErrorResponse;
-import ru.yandex.practicum.filmorate.exception.AbstractDtoException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -35,14 +33,14 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film) {
         FilmValidator.validate(film);
         log.debug("Фильм успешно добавлен в список фильмов; id={}", film.getId());
         return filmStorage.create(film);
     }
 
     @PutMapping
-    public Film update(@RequestBody Film film) {
+    public Film update(@Valid @RequestBody Film film) {
         FilmValidator.validate(film);
         log.debug("Фильм с id={} успешно обновлён", film.getId());
         return filmStorage.update(film);
@@ -79,8 +77,4 @@ public class FilmController {
         filmService.removeLike(filmId, userId);
     }
 
-    @ExceptionHandler
-    public ResponseEntity<ErrorResponse> handleException(AbstractDtoException e) {
-        return e.toResponse();
-    }
 }

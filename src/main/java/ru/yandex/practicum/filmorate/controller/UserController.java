@@ -1,11 +1,9 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.dto.ErrorResponse;
-import ru.yandex.practicum.filmorate.exception.AbstractDtoException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
@@ -29,14 +27,14 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
+    public User create(@Valid @RequestBody User user) {
         UserValidator.validate(user);
         log.debug("Пользователь успешно добавлен в список пользователей; id={}", user.getId());
         return userStorage.create(user);
     }
 
     @PutMapping
-    public User update(@RequestBody User user) {
+    public User update(@Valid @RequestBody User user) {
         if (user.getId() == null) {
             throw new NotFoundException("Необходимо указать id пользователя," +
                     " иначе его невозможно будет найти в нашей базе");
@@ -81,11 +79,6 @@ public class UserController {
     public Collection<User> getCommonFriends(@PathVariable long userId, @PathVariable long otherUserId) {
         log.trace("Поиск общий друзей пользователя id={} и пользователя id={}", userId, otherUserId);
         return userService.getCommonFriends(userId, otherUserId);
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<ErrorResponse> handleException(AbstractDtoException e) {
-        return e.toResponse();
     }
 
 }
