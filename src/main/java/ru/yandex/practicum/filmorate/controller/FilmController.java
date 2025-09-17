@@ -1,70 +1,80 @@
+/*
+* Александру Ф.
+* Добрый день!
+* Заранее благодарю за код-ревью.
+* */
+
 package ru.yandex.practicum.filmorate.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.validator.FilmValidator;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/films")
+@RequiredArgsConstructor
 public class FilmController {
-    private final Map<Long, Film> films = new HashMap<>();
+    private final FilmStorage filmStorage;
+    private final FilmService filmService;
 
-    private final Logger log = LoggerFactory.getLogger(FilmController.class);
-
+    // работа с хранилищем
     @GetMapping
     public Collection<Film> getAllFilms() {
-        return films.values();
+        return filmStorage.getAllFilms();
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film) {
         FilmValidator.validate(film);
-        film.setId(getNextId());
-
-        films.put(film.getId(), film);
-
         log.debug("Фильм успешно добавлен в список фильмов; id={}", film.getId());
-
-        return film;
-    }
-
-    public long getNextId() {
-        long currentMaxId = films.keySet().stream()
-                .mapToLong(filmId -> filmId)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+        return filmStorage.create(film);
     }
 
     @PutMapping
-    public Film update(@RequestBody Film film) {
-        if (film.getId() == null) {
-            throw new NotFoundException("Необходимо указать id фильма," +
-                                            " иначе его невозможно будет найти в нашей базе");
-        }
-
+    public Film update(@Valid @RequestBody Film film) {
         FilmValidator.validate(film);
+        log.debug("Фильм с id={} успешно обновлён", film.getId());
+        return filmStorage.update(film);
+    }
 
-        if (films.containsKey(film.getId())) {
-            Film oldFilm = films.get(film.getId());
-            // валидация проходит раньше поиска, поэтому можно считать все переданные значения валидными
-            oldFilm.setName(film.getName());
-            oldFilm.setDescription(film.getDescription());
-            oldFilm.setReleaseDate(film.getReleaseDate());
-            oldFilm.setDuration(film.getDuration());
+    @GetMapping("/{filmId}")
+    public Optional<Film> getById(@PathVariable long filmId) {
+        log.trace("Поиск фильма по id={}", filmId);
+        return filmStorage.getById(filmId);
+    }
 
-            log.debug("Фильм с id={} успешно обновлён", film.getId());
+    @DeleteMapping("/{filmId}")
+    public Film deleteById(@PathVariable long filmId) {
+        log.trace("Удаление фильма с id={}", filmId);
+        return filmStorage.deleteById(filmId);
+    }
 
-            return oldFilm;
-        }
-        throw new NotFoundException("Указанный фильм не найден");
+    // работа с лайками
+    @GetMapping("/popular")
+    public Collection<Film> getFilmsWithMostLikes(@RequestParam(defaultValue = "10") int count) {
+        log.trace("Выводим список из {} первых по популярности фильмов", count);
+        return filmService.getFilmsWithMostLikes(count);
+    }
+
+    @PutMapping("/{filmId}/like/{userId}")
+    public void addLike(@PathVariable long filmId, @PathVariable long userId) {
+        log.trace("Добавление лайка фильму id={} от пользователя id={}", filmId, userId);
+        filmService.addLike(filmId, userId);
+    }
+
+    @DeleteMapping("/{filmId}/like/{userId}")
+    public void removeLike(@PathVariable long filmId, @PathVariable long userId) {
+        log.trace("Удаление лайка для фильма id={} от пользователя id={}", filmId, userId);
+        filmService.removeLike(filmId, userId);
     }
 
 }

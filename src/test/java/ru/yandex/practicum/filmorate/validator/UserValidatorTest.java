@@ -13,29 +13,38 @@ public class UserValidatorTest {
 
     @Test
     void createUserTest() {
-        User user = new User(null, "johnsmith@gmail.com", "John_Smith", null,
-                LocalDate.of(2005, 12, 31));
+        User user = new User();
+        user.setEmail("johnsmith@gmail.com");
+        user.setLogin("John_Smith");
+        user.setBirthday(LocalDate.of(2005, 12, 31));
+
         assertDoesNotThrow(() -> UserValidator.validate(user));
     }
 
     @Test
     void invalidEmailTest() {
-        User user = new User(null, "johnsmith_gmail.com", "John_Smith", null,
-                LocalDate.of(2005, 12, 31));
+        User user = new User();
+        user.setEmail("johnsmith_gmail.com");
+        user.setLogin("John_Smith");
+        user.setBirthday(LocalDate.of(2005, 12, 31));
         assertThrows(ValidationException.class, () -> UserValidator.validate(user));
     }
 
     @Test
     void invalidLoginTest() {
-        User user = new User(null, "johnsmith@gmail.com", "John Smith", null,
-                LocalDate.of(2005, 12, 31));
+        User user = new User();
+        user.setLogin("johnsmith@gmail.com");
+        user.setLogin("John Smith");
+        user.setBirthday(LocalDate.of(2005, 12, 31));
         assertThrows(ValidationException.class, () -> UserValidator.validate(user));
     }
 
     @Test
     void invalidBirthdayTest() {
-        User user = new User(null, "johnsmith@gmail.com", "John_Smith", null,
-                LocalDate.of(2025, 12, 31));
+        User user = new User();
+        user.setLogin("johnsmith@gmail.com");
+        user.setLogin("John_Smith");
+        user.setBirthday(LocalDate.of(2025, 12, 31));
         assertThrows(ValidationException.class, () -> UserValidator.validate(user));
     }
 }

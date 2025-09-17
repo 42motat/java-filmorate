@@ -2,17 +2,15 @@ package ru.yandex.practicum.filmorate.validator;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserValidator {
-
-    private static final Logger log = LoggerFactory.getLogger(UserValidator.class);
 
     public static void validate(User user) {
         emailValidation(user.getEmail());
