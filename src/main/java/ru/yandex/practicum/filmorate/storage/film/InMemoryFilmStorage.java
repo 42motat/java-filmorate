@@ -5,10 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -54,11 +51,26 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film deleteById(long filmId) {
+    public void deleteById(long filmId) {
         if (!films.containsKey(filmId)) {
             throw new NotFoundException("Проверьте корректность введённого id фильма");
         }
-        return films.remove(filmId);
+        films.remove(filmId);
+    }
+
+    @Override
+    public void addLike(long userId, long filmId) {
+        // заполнитель
+    }
+
+    @Override
+    public void removeLike(long userId, long filmId) {
+        // заполнитель
+    }
+
+    @Override
+    public Collection<Film> getFilmsWithMostLikes(int count) {
+        return List.of();
     }
 
     public long getNextId() {

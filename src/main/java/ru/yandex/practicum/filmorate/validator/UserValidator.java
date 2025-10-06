@@ -1,10 +1,12 @@
 package ru.yandex.practicum.filmorate.validator;
 
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.filmorate.dto.user.NewUserRequest;
+import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 
@@ -12,7 +14,18 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserValidator {
 
-    public static void validate(User user) {
+    public static void validate(@Valid NewUserRequest user) {
+        emailValidation(user.getEmail());
+        loginValidation(user.getLogin());
+        dateOfBirthValidation(user.getBirthday());
+        if (user.getName() != null) {
+            shownNameValidation(user.getName());
+        } else {
+            user.setName(user.getLogin());
+        }
+    }
+
+    public static void validate(@Valid UpdateUserRequest user) {
         emailValidation(user.getEmail());
         loginValidation(user.getLogin());
         dateOfBirthValidation(user.getBirthday());

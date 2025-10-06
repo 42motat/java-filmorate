@@ -45,11 +45,31 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User deleteById(long userId) {
+    public void deleteById(long userId) {
         if (!users.containsKey(userId)) {
             throw new NotFoundException("Проверьте корректность введённого id пользователя");
         }
-        return users.remove(userId);
+        users.remove(userId);
+    }
+
+    @Override
+    public void addFriend(long userId, long otherUserId) {
+        // заполнитель
+    }
+
+    @Override
+    public Collection<User> getUserFriends(long userId) {
+        return List.of();
+    }
+
+    @Override
+    public Collection<User> getCommonFriends(long userId, long otherUserId) {
+        return List.of();
+    }
+
+    @Override
+    public void removeFriend(long userId, long otherUserId) {
+        // заполнитель
     }
 
     private long getNextId() {
@@ -59,5 +79,4 @@ public class InMemoryUserStorage implements UserStorage {
                 .orElse(0);
         return ++currentMaxId;
     }
-
 }

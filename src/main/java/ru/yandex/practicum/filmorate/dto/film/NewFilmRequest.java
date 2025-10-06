@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.dto.film;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -7,13 +7,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Data
-public class Film {
+public class NewFilmRequest {
     private Long id;
     @NotBlank
     private String name;
@@ -23,7 +20,7 @@ public class Film {
     private LocalDate releaseDate;
     @Min(1)
     private long duration;
-    public Set<Long> usersWhoLiked = new HashSet<>();
-    private List<Genre> genres = new ArrayList<>();
-    private MpaRating mpaRating;
+    private Set<Long> usersWhoLiked = new HashSet<>();
+    private List<Map<String, String>> genres = new ArrayList<>();
+    private Map<String, Integer> mpa;
 }
