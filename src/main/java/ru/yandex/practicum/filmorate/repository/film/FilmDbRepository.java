@@ -4,7 +4,7 @@
  * Заранее благодарю за код-ревью.
  * */
 
-package ru.yandex.practicum.filmorate.repository;
+package ru.yandex.practicum.filmorate.repository.film;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,17 +12,20 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.repository.BaseDbRepository;
 import ru.yandex.practicum.filmorate.validator.FilmValidator;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Primary
 @Repository
-public class FilmDbRepository extends BaseDbRepository<Film> implements FilmStorage {
+public class FilmDbRepository extends BaseDbRepository<Film> implements FilmRepository {
 
     // шаблоны запросов
     private static final String GET_ALL_QUERY = """
@@ -45,9 +48,6 @@ public class FilmDbRepository extends BaseDbRepository<Film> implements FilmStor
     private static final String UPDATE_QUERY = """
             UPDATE films SET name = ?, description = ?, releaseDate = ?, duration = ?, ratingId = ?
             WHERE filmId = ?
-            """;
-    private static final String INSERT_INTO_FILM_GENRES_QUERY = """
-            INSERT INTO filmGenres (filmId, genreId) VALUES (?, ?)
             """;
 
     private static final String DELETE_QUERY = """
@@ -100,7 +100,19 @@ public class FilmDbRepository extends BaseDbRepository<Film> implements FilmStor
                 film.getMpaRating().getId()
         );
         film.setId(filmId);
-        film.getGenres().forEach(genre -> setFilmGenres(filmId, genre.getId()));
+        List<String> batchQueries = new ArrayList<>();
+        if (!film.getGenres().isEmpty()) {
+            List<Integer> genreList = new ArrayList<>();
+            for (int i = 0; i < film.getGenres().size(); i++) {
+                genreList.add(film.getGenres().get(i).getId());
+            }
+            for (Integer genreId : genreList) {
+                String query = "INSERT INTO filmGenres (filmId, genreId) VALUES (" + film.getId() + ", " + genreId + ")";
+                batchQueries.add(query);
+            }
+            jdbc.batchUpdate(batchQueries.toArray(new String[0]));
+        }
+
         return film;
     }
 
@@ -114,7 +126,18 @@ public class FilmDbRepository extends BaseDbRepository<Film> implements FilmStor
                 film.getMpaRating().getId(),
                 film.getId()
         );
-        film.getGenres().forEach(genre -> setFilmGenres(film.getId(), genre.getId()));
+        List<String> batchQueries = new ArrayList<>();
+        if (!film.getGenres().isEmpty()) {
+            List<Integer> genreList = new ArrayList<>();
+            for (int i = 0; i < film.getGenres().size(); i++) {
+                genreList.add(film.getGenres().get(i).getId()); // Предполагаем, что у жанра есть метод getId()
+            }
+            for (Integer genreId : genreList) {
+                String query = "UPDATE filmGenres SET filmId = " + film.getId() + ", genreId = " + genreId;
+                batchQueries.add(query);
+            }
+            jdbc.batchUpdate(batchQueries.toArray(new String[0]));
+        }
         return film;
     }
 
@@ -137,18 +160,5 @@ public class FilmDbRepository extends BaseDbRepository<Film> implements FilmStor
     @Override
     public Collection<Film> getFilmsWithMostLikes(int count) {
         return getAll(GET_MOST_LIKES_QUERY, count);
-    }
-
-    // "сервисы"
-    private void setFilmGenres(Object... params) {
-        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbc.update(connection -> {
-            PreparedStatement ps = connection
-                    .prepareStatement(INSERT_INTO_FILM_GENRES_QUERY, Statement.RETURN_GENERATED_KEYS);
-            for (int idx = 0; idx < params.length; idx++) {
-                ps.setObject(idx + 1, params[idx]);
-            }
-            return ps;
-        }, keyHolder);
     }
 }

@@ -1,18 +1,18 @@
-package ru.yandex.practicum.filmorate.repository;
+package ru.yandex.practicum.filmorate.repository.user;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.repository.BaseDbRepository;
 
 import java.util.Collection;
 import java.util.Optional;
 
 @Repository
 @Primary
-public class UserDbRepository extends BaseDbRepository<User> implements UserStorage {
+public class UserDbRepository extends BaseDbRepository<User> implements UserRepository {
 
     // шаблоны запросов
     private static final String GET_ALL_QUERY = """

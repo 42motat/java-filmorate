@@ -8,7 +8,7 @@ import ru.yandex.practicum.filmorate.dto.user.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,73 +18,73 @@ import java.util.stream.Collectors;
 @Service
 @Qualifier("UserDbRepository")
 public class UserServiceImpl implements UserService {
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
 
-    public UserServiceImpl(UserStorage userStorage) {
-        this.userStorage = userStorage;
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     public UserDto createUser(NewUserRequest newUserRequest) {
         User user = UserMapper.mapToUser(newUserRequest);
-        user = userStorage.create(user);
+        user = userRepository.create(user);
         return UserMapper.mapToUserDto(user);
     }
 
     public List<UserDto> getAllUsers() {
-        return userStorage.getAllUsers()
+        return userRepository.getAllUsers()
                 .stream()
                 .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toList());
     }
 
     public UserDto getById(long userId) {
-        return userStorage.getById(userId)
+        return userRepository.getById(userId)
                 .map(UserMapper::mapToUserDto)
                 .orElseThrow(() -> new NotFoundException("Пользователь id=" + userId + " не найден"));
     }
 
     public UserDto updateUser(long userId, UpdateUserRequest updateUserRequest) {
-        User updatedUser = userStorage.getById(userId)
+        User updatedUser = userRepository.getById(userId)
                 .map(user -> UserMapper.updateUserFields(user, updateUserRequest))
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        updatedUser = userStorage.update(updatedUser);
+        updatedUser = userRepository.update(updatedUser);
         return UserMapper.mapToUserDto(updatedUser);
     }
 
     @Override
     public void deleteUser(long userId) {
-        userStorage.deleteById(userId);
+        userRepository.deleteById(userId);
     }
 
     // работа с друзьями
     @Override
     public void addFriend(long userId, long otherUserId) {
-        User user = userStorage.getById(userId)
+        User user = userRepository.getById(userId)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
-        User otherUser = userStorage.getById(otherUserId)
+        User otherUser = userRepository.getById(otherUserId)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
 //        user.getFriends().add(otherUserId);
-        userStorage.addFriend(userId, otherUserId);
+        userRepository.addFriend(userId, otherUserId);
 
     }
 
     @Override
     public void removeFriend(long userId, long otherUserId) {
-        User user = userStorage.getById(userId)
+        User user = userRepository.getById(userId)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
-        User otherUser = userStorage.getById(otherUserId)
+        User otherUser = userRepository.getById(otherUserId)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
-        userStorage.removeFriend(userId, otherUserId);
-        System.out.println(userStorage.getUserFriends(userId));
+        userRepository.removeFriend(userId, otherUserId);
+        System.out.println(userRepository.getUserFriends(userId));
     }
 
     @Override
     public Collection<UserDto> getUserFriends(long userId) {
-        User user = userStorage.getById(userId)
+        User user = userRepository.getById(userId)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
         Set<Long> friendsId = user.getFriends();
-        userStorage.getUserFriends(user.getId());
-        return userStorage.getUserFriends(userId)
+        userRepository.getUserFriends(user.getId());
+        return userRepository.getUserFriends(userId)
                 .stream()
                 .map(UserMapper::mapToUserDto)
                 .toList();
@@ -92,11 +92,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Collection<UserDto> getCommonFriends(long userId, long otherUserId) {
-        User user = userStorage.getById(userId)
+        User user = userRepository.getById(userId)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
-        User otherUser = userStorage.getById(otherUserId)
+        User otherUser = userRepository.getById(otherUserId)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя нет в базе данных"));
-        return userStorage.getCommonFriends(userId, otherUserId)
+        return userRepository.getCommonFriends(userId, otherUserId)
                 .stream()
                 .map(UserMapper::mapToUserDto)
                 .toList();
